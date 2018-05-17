@@ -2,6 +2,8 @@
 #define __COROUTINE_CC_H
 
 #include <functional>
+#include <vector>
+#include <memory>
 #include <cstddef>
 
 #if __APPLE__ && __MACH__
@@ -10,14 +12,18 @@
 	#include <ucontext.h>
 #endif 
 
+
 namespace Coroutinecc{
 
 
 typedef std::function<void (Scheduler*, void*)> CoroutineFunc;
+using std::vector;
+using std::shared_ptr;
 
 class Scheduler {
 public:
     Scheduler();
+    virtual ~Scheduler();
     Scheduler& open();
     void close();
     void resume(int id);
@@ -35,7 +41,7 @@ private:
     int coroutine_num_;
     int cap_;
     int running_;
-    Coroutine **co_;    
+    vector<shared_ptr<Coroutine>> co_;
 };
 
 class Coroutine {
@@ -53,4 +59,5 @@ public:
     ~Coroutine();
 }
 }
+
 #endif //__COROUTINE_CC_H
