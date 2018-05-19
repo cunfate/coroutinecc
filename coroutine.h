@@ -26,14 +26,17 @@ public:
     virtual ~Scheduler();
     Scheduler& open();
     void close();
+    ptrdiff_t add(CoroutineFunc func, void* ud);
     void resume(int id);
-    int status(int id);
+    inline Coroutine::status status(int id) const;
     int running();
     void yield();
+    inline shared_ptr<Coroutine>& operator[](size_t);
 
 private:
     static const int STACK_SIZE = (1024*1024);
     static const int DEFAULT_COROUTINE = 16;
+    static void mainfunc(uint32_t low32, uint32_t hi32);
 
     //私有变量
     char stack_[STACK_SIZE];
@@ -55,8 +58,19 @@ private:
     int status_;
     char* stack_;
 public:
+    static enum status{
+        COROUTINE_DEAD,
+        COROUTINE_READY,
+        COROUTINE_RUNNING,
+        COROUTINE_SUSPEND
+    };
     Coroutine(Scheduler* s, CoroutineFunc func, void* ud);
     ~Coroutine();
+    status getStatus() const { return status_; }
+    void setStatus(status stat) { status_ = stat; }
+    ucontext_t& getContext() { return ctx_; }
+    void saveStack(char *top);
+    void inline runFunc(Scheduler* s);
 }
 }
 
