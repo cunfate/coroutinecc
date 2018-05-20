@@ -1,4 +1,7 @@
-#include <assert>
+#include <cassert>
+#include <cstdlib>
+#include <cstring>
+#include <cstdio>
 #include "coroutine.h"
 
 namespace Coroutinecc{
@@ -27,27 +30,21 @@ Scheduler::~Scheduler() {
 ptrdiff_t
 Scheduler::add(CoroutineFunc func, void* ud) {
     Coroutine *co = new Coroutine(this, func, ud);
-    this->co_.push_back(make_shared(co));
-    return this->co.size() - 1;
+    this->co_.push_back(std::shared_ptr<Coroutine>(co));
+    return this->co_.size() - 1;
 }
 
-/**
- * 获取Coroutine实例
- */
-inline shared_ptr<Coroutine>& 
-Scheduler::operator[](size_t key) {
-    return co_[key];
-}
 
 /**
  * 恢复id指向的Coroutine实例
  */
 void
 Scheduler::resume(int id) {
-    std::assert(this->running_ == -1);
-    std::assert(id >= 0 && id < cap_);
+    //std::assert(this->running_ == -1);
+    //std::assert(id >= 0 && id < cap_);
 
     auto C = co_[id];
+    uintptr_t ptr;
     if(!C) {
         return ;
     }
@@ -62,12 +59,12 @@ Scheduler::resume(int id) {
             nowContext.uc_link = &main_;            //设置该协程的后继上下文
             running_ = id;                          
             C->setStatus(Coroutine::status::COROUTINE_RUNNING);
-            uintptr_t ptr = (uintptr_t)this;
-            makecontext(&nowContext, (void(*)(void))mainfunc, (uint32_t)ptr, (uint32_t)(ptr >> 32));    //为协程设置入口函数
+            ptr = (uintptr_t)this;
+            makecontext(&nowContext, (void(*)(void))mainfunc, 2, (uint32_t)ptr, (uint32_t)(ptr >> 32));    //为协程设置入口函数
             swapcontext(&main_, &nowContext);       //保存当前上下文到main_，激活nowContext指向的目标上下文
             break;
         case Coroutine::status::COROUTINE_SUSPEND:
-            ::memcpy(stack_ + STACK_SIZE - C->size_, C->stack_, C->size_);  
+            ::memcpy(stack_ + STACK_SIZE - C->size(), C->stack(), C->size());  
             running_ = id;
             swapcontext(&main_, &nowContext);
             break;
@@ -82,9 +79,10 @@ Scheduler::resume(int id) {
 void
 Scheduler::yield() {
     assert(running_ >= 0);
-    Coroutine& C = co_[id];     //获取正在运行的协程实例
-    assert(&C > stack_);
+    Coroutine& C = *co_[running_];     //获取正在运行的协程实例
+    //assert((char*)(&C) > stack_);
     C.saveStack(stack_ + STACK_SIZE);   //保存当前栈空间
+    C.setStatus(Coroutine::status::COROUTINE_SUSPEND);
     running_ = -1;
     swapcontext(&C.getContext(), &main_);
 }
@@ -93,7 +91,7 @@ Scheduler::yield() {
  * 获取 id 指向协程实例的状态
  */
 inline Coroutine::status
-Scheduler::status(int id) {
+Scheduler::status(int id) const {
     assert(id >= 0 && id < cap_);
     if(!co_[id]) {
         return Coroutine::status::COROUTINE_DEAD;
@@ -117,12 +115,11 @@ Scheduler::running() {
  */
 void
 Scheduler::mainfunc(uint32_t low32, uint32_t hi32) {
-    uintptr_t sptr = (uintptr_t)low32 | (uintptr_t)((uintptr_t)hi32 << 32);
-    Scheduler* S = reinterpret_cast<Scheduler*>(sptr);
-    int id = S->running();
-    auto C = *S[id];
-    C->runFunc(S);
-    C = nullptr;
+    uintptr_t sptr = (uintptr_t)low32 | ((uintptr_t)hi32 << 32);
+    Scheduler& S = *(Scheduler*)(sptr);
+    int id = S.running();
+    S[id]->runFunc(&S);
+    S[id] = nullptr;
 }
 
 /**
@@ -132,7 +129,9 @@ Scheduler::mainfunc(uint32_t low32, uint32_t hi32) {
  * 初始化协程实例，初始运行状态为READY
  */
 Coroutine::Coroutine(Scheduler* s, CoroutineFunc func, void* ud):
-    func_(func),  ud_(ud), sch_(s), cap_(0), size_(0), status_(status::COROUTINE_READY), stack_(nullptr) { }
+    func_(func),  ud_(ud), sch_(s), cap_(0), size_(0), status_(status::COROUTINE_READY), stack_(nullptr) {
+        ::memset(&ctx_, 0, sizeof(ctx_));
+}
 
 /**
  * 协程实例的析构函数
@@ -150,7 +149,7 @@ Coroutine::~Coroutine() {
 void    
 Coroutine::saveStack(char* top) {
     char dummy = 0;
-    assert(top - &dummy <= STACK_SIZE);
+    assert(top - &dummy <= Scheduler::STACK_SIZE);
     if(cap_ < top - &dummy) {
         delete stack_;
         cap_ = top - &dummy;

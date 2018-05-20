@@ -27,10 +27,11 @@ test(Scheduler* s) {
     ptrdiff_t co1 = s->add(foo, &arg1);
     ptrdiff_t co2 = s->add(foo, &arg2);
     printf("main start\n");
-    while(s[co1].status() != Coroutine::status::COROUTINE_DEAD &&
-        s[co2].status() != Coroutine::status::COROUTINE_DEAD) {
-            s->resume(co1);
-            s->resume(co2);
+    while((*s)[co1] && (*s)[co2]) {
+            if((*s)[co1])
+                s->resume(co1);
+            if((*s)[co2])
+                s->resume(co2);
     }
     printf("main end\n");
 }

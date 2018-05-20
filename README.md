@@ -9,3 +9,18 @@
 $ g++ coroutine.cc test.cc -std=c++11 -o test
 $ ./test
 ```
+控制台应当打印：
+```s
+main start
+coroutine 0 : 0
+coroutine 1 : 200
+coroutine 0 : 1
+coroutine 1 : 201
+coroutine 0 : 2
+coroutine 1 : 202
+coroutine 0 : 3
+coroutine 1 : 203
+coroutine 0 : 4
+coroutine 1 : 204
+main end
+```
