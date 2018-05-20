@@ -37,8 +37,8 @@ test(Scheduler* s) {
 
 int
 main() {
-    Scheduler s;
-    test(&s);
+    Scheduler* s = new Scheduler();
+    test(s);
 
     return 0;
 }
