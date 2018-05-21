@@ -43,7 +43,7 @@ test(Scheduler* s) {
     clock_t end = clock();
     double swicth_times = 200000 / ((double)(end - start) / CLOCKS_PER_SEC);
     printf("switch times test end!\n");
-    printf("It can switch %lf times\n", swicth_times);
+    printf("It can switch %lf times per second\n", swicth_times);
 }
 
 int
