@@ -3,6 +3,7 @@
 - 基于*nix的`<ucontext.h>`实现
 - 参考云风的[coroutine](https://github.com/cloudwu/coroutine)实现
 - 支持linux、unix、Mac OS X
+- 协程库实现相关文章可以参考[从ucontext到coroutine](https://www.jianshu.com/p/a96b31da3ab0)
 
 ### 构建 && 测试
 ```s
@@ -23,4 +24,15 @@ coroutine 1 : 203
 coroutine 0 : 4
 coroutine 1 : 204
 main end
+```
+简单的性能测试可以：
+```s
+$ g++ coroutine.cc testperform.cc -std=c++11 -o test-perform
+$ ./test-perform
+```
+在Ubuntu 16.04LTS, i7-5500U 3GB(VMWARE虚拟机)测试结果为：
+```s
+switch times test start!
+switch times test end!
+It can switch 879039.736991 times
 ```
