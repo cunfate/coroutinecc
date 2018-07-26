@@ -5,6 +5,10 @@
 - 支持linux、unix、Mac OS X
 - 协程库实现相关文章可以参考[从ucontext到coroutine](https://www.jianshu.com/p/a96b31da3ab0)
 
+## 未来改进：
+    1. 提供对等协程实现
+    2. hook进一些systemcall，将所有fd设为非阻塞，并在epoll中切换协程，实现用户侧阻塞IO，实现侧非阻塞效率。
+
 ### 构建 && 测试
 ```s
 $ g++ coroutine.cc test.cc -std=c++11 -o test
