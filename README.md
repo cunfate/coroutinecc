@@ -1,4 +1,5 @@
 ## Coroutinecc 协程库
+[![Build Status](https://travis-ci.org/cunfate/coroutinecc.svg?branch=master)](https://travis-ci.org/cunfate/coroutinecc)
 
 - 基于*nix的`<ucontext.h>`实现
 - 参考云风的[coroutine](https://github.com/cloudwu/coroutine)实现
