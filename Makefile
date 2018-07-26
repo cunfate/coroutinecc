@@ -1,5 +1,5 @@
 C = g++
-CFLAGS=-I./src/ -L./lib -lcoroutine
+CFLAGS=-I./src/ -L./lib -lcoroutine -std=c++11
 
 
 all: test testperform colib clean
