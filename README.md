@@ -1,5 +1,4 @@
-## Coroutinecc 协程库
-[![Build Status](https://travis-ci.org/cunfate/coroutinecc.svg?branch=master)](https://travis-ci.org/cunfate/coroutinecc)
+## Coroutinecc 协程库[![Build Status](https://travis-ci.org/cunfate/coroutinecc.svg?branch=master)](https://travis-ci.org/cunfate/coroutinecc)
 
 - 基于*nix的`<ucontext.h>`实现
 - 参考云风的[coroutine](https://github.com/cloudwu/coroutine)实现
@@ -8,13 +7,13 @@
 
 ## 未来改进：
 
-    1. 提供对等协程实现
-    2. hook进一些systemcall，将所有fd设为非阻塞，并在epoll中切换协程，实现用户侧阻塞IO，实现侧非阻塞效率。
+1. 提供对等协程实现
+2. hook进一些systemcall，将所有fd设为非阻塞，并在epoll中切换协程，实现用户侧阻塞IO，实现侧非阻塞效率。
 
 ### 构建 && 测试
 ```s
-$ g++ coroutine.cc test.cc -std=c++11 -o test
-$ ./test
+$ make
+$ bin/test
 ```
 控制台应当打印：
 ```s
@@ -33,8 +32,7 @@ main end
 ```
 简单的性能测试可以：
 ```s
-$ g++ coroutine.cc testperform.cc -std=c++11 -o test-perform
-$ ./test-perform
+$ bin/test-perform
 ```
 在Ubuntu 16.04LTS, i7-5500U 3GB(VMWARE虚拟机)测试结果为：
 ```s
